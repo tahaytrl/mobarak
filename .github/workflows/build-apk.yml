@@ -1,0 +1,149 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prepare web assets
+        run: |
+          mkdir -p www
+          cp index.html www/index.html
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Configure permissions and icons
+        run: |
+          python3 - <<'PY'
+          import os, shutil, struct, zlib, math
+
+          RES = 'android/app/src/main/res'
+
+          # ---------- مجوزهای اندروید ----------
+          mf = 'android/app/src/main/AndroidManifest.xml'
+          s = open(mf, encoding='utf-8').read()
+          perms = ['android.permission.POST_NOTIFICATIONS', 'android.permission.USE_EXACT_ALARM',
+                   'android.permission.RECEIVE_BOOT_COMPLETED', 'android.permission.VIBRATE']
+          add = ''.join('    <uses-permission android:name="%s" />\n' % p for p in perms if p not in s)
+          s = s.replace('</manifest>', add + '</manifest>')
+          open(mf, 'w', encoding='utf-8').write(s)
+
+          # ---------- آیکن نوتیفیکیشن ----------
+          os.makedirs(RES + '/drawable', exist_ok=True)
+          open(RES + '/drawable/ic_notification.xml', 'w').write(
+              '<vector xmlns:android="http://schemas.android.com/apk/res/android" '
+              'android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">'
+              '<path android:fillColor="#FFFFFFFF" android:pathData="'
+              'M12,2c0.9,1.5 1.5,2.5 1.5,3.3A1.5,1.5 0 1,1 10.5,5.3C10.5,4.5 11.1,3.5 12,2z '
+              'M5,13h14v7a1,1 0 0,1 -1,1H6a1,1 0 0,1 -1,-1z M11,8h2v5h-2z"/></vector>')
+
+          # ---------- آیکن برنامه ----------
+          def sample(u, v, mode):
+              if mode == 'round' and (u - .5) ** 2 + (v - .5) ** 2 > .25:
+                  return (0, 0, 0, 0)
+              if 0.27 <= u <= 0.73 and 0.50 <= v <= 0.76:
+                  rr = 0.055
+                  cx = min(max(u, 0.27 + rr), 0.73 - rr); cy = min(max(v, 0.50 + rr), 0.76 - rr)
+                  if (u - cx) ** 2 + (v - cy) ** 2 <= rr * rr:
+                      if abs(v - (0.60 + 0.03 * math.sin((u - 0.27) * 30))) < 0.018:
+                          return (249, 168, 212, 255)
+                      return (255, 255, 255, 255)
+              if 0.47 <= u <= 0.53 and 0.36 <= v <= 0.50:
+                  return (255, 255, 255, 255)
+              if ((u - 0.5) / 0.04) ** 2 + ((v - 0.29) / 0.075) ** 2 <= 1:
+                  return (253, 230, 138, 255)
+              if mode == 'fg':
+                  return (0, 0, 0, 0)
+              t = (u + v) / 2
+              return (int(244 + (219 - 244) * t), int(114 + (39 - 114) * t), int(182 + (119 - 182) * t), 255)
+
+          def make(path, size, mode):
+              S = 3
+              rows = []
+              for y in range(size):
+                  row = bytearray([0])
+                  for x in range(size):
+                      a = r = g = b = 0
+                      for sy in range(S):
+                          for sx in range(S):
+                              pr, pg, pb, pa = sample((x * S + sx + .5) / (size * S), (y * S + sy + .5) / (size * S), mode)
+                              r += pr * pa; g += pg * pa; b += pb * pa; a += pa
+                      n = S * S
+                      if a:
+                          row += bytes((r // a, g // a, b // a, a // n))
+                      else:
+                          row += bytes((0, 0, 0, 0))
+                  rows.append(bytes(row))
+              def chunk(t, d):
+                  return struct.pack('>I', len(d)) + t + d + struct.pack('>I', zlib.crc32(t + d) & 0xffffffff)
+              png = (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', size, size, 8, 6, 0, 0, 0))
+                     + chunk(b'IDAT', zlib.compress(b''.join(rows), 9)) + chunk(b'IEND', b''))
+              open(path, 'wb').write(png)
+
+          dens = {'mdpi': 1, 'hdpi': 1.5, 'xhdpi': 2, 'xxhdpi': 3, 'xxxhdpi': 4}
+          for name, k in dens.items():
+              d = '%s/mipmap-%s' % (RES, name)
+              os.makedirs(d, exist_ok=True)
+              make(d + '/ic_launcher.png', int(48 * k), 'sq')
+              make(d + '/ic_launcher_round.png', int(48 * k), 'round')
+              make(d + '/ic_launcher_fg.png', int(108 * k), 'fg')
+
+          os.makedirs(RES + '/values', exist_ok=True)
+          open(RES + '/values/ic_colors.xml', 'w').write(
+              '<?xml version="1.0" encoding="utf-8"?>\n<resources><color name="ic_launcher_bg">#EC4899</color></resources>\n')
+          os.makedirs(RES + '/mipmap-anydpi-v26', exist_ok=True)
+          adaptive = ('<?xml version="1.0" encoding="utf-8"?>\n'
+                      '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">'
+                      '<background android:drawable="@color/ic_launcher_bg"/>'
+                      '<foreground android:drawable="@mipmap/ic_launcher_fg"/></adaptive-icon>\n')
+          for f in ('ic_launcher.xml', 'ic_launcher_round.xml'):
+              open(RES + '/mipmap-anydpi-v26/' + f, 'w').write(adaptive)
+          print('android config done')
+          PY
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk birthday-reminder.apk
+
+      - name: Upload APK as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: birthday-reminder-apk
+          path: birthday-reminder.apk
+
+      - name: Publish APK in Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: نسخه ${{ github.run_number }}
+          files: birthday-reminder.apk
