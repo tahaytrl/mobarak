@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>یادآور تولد شمسی</title>
+<meta name="theme-color" content="#ec4899" />
+<style>
+:root{--p50:#fff1f5;--p100:#ffe4ec;--p200:#fecdd9;--p300:#f9a8c4;--p400:#f472b6;--p500:#ec4899;--p600:#db2777;--text:#4a1d33;--muted:#9d6b82}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:Tahoma,'Segoe UI',system-ui,sans-serif;background:var(--p50);color:var(--text);direction:rtl}
+.app{max-width:520px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--p100) 0,var(--p50) 220px)}
+.header{padding:calc(env(safe-area-inset-top) + 22px) 20px 18px;background:linear-gradient(135deg,var(--p400),var(--p600));color:#fff;border-radius:0 0 28px 28px;box-shadow:0 8px 24px rgba(219,39,119,.25)}
+.header h1{margin:0;font-size:22px;font-weight:800}
+.today{margin:6px 0 0;font-size:14px;opacity:.92}
+.content{flex:1;padding:18px 16px 130px}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.card{display:flex;align-items:center;gap:12px;background:#fff;padding:14px;border-radius:20px;box-shadow:0 4px 16px rgba(236,72,153,.12);border:1px solid var(--p100)}
+.card.today-card{border:2px solid var(--p500);background:linear-gradient(135deg,#fff,var(--p100))}
+.avatar{width:46px;height:46px;flex-shrink:0;border-radius:50%;background:linear-gradient(135deg,var(--p300),var(--p500));color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800}
+.info{flex:1;min-width:0}
+.name{font-weight:700;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.date{margin-top:3px;font-size:13px;color:var(--muted)}
+.badge{font-size:12px;font-weight:700;padding:6px 10px;border-radius:999px;background:var(--p100);color:var(--p600);white-space:nowrap}
+.badge.now{background:var(--p500);color:#fff}
+.icon-btn{border:none;background:transparent;color:var(--p400);padding:8px;border-radius:12px;cursor:pointer;display:flex}
+.icon-btn:active{background:var(--p100);color:var(--p600)}
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty .e{font-size:64px;margin-bottom:8px}
+.panel{background:#fff;border-radius:24px;padding:20px;box-shadow:0 4px 16px rgba(236,72,153,.12)}
+.panel h2{margin:0 0 16px;font-size:18px;color:var(--p600)}
+.form{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:12px}.row label{flex:1}
+label{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600}
+input,select{font-family:inherit;font-size:16px;padding:12px 14px;border:2px solid var(--p200);border-radius:14px;background:var(--p50);color:var(--text);outline:none;width:100%}
+input:focus,select:focus{border-color:var(--p500);background:#fff}
+.btn{font-family:inherit;font-size:16px;font-weight:700;padding:13px 22px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--p400),var(--p600));color:#fff;cursor:pointer;box-shadow:0 6px 16px rgba(219,39,119,.3)}
+.btn:active{transform:scale(.98)}
+.block{width:100%;margin-top:8px}
+.outline{background:#fff;color:var(--p600);border:2px solid var(--p400);box-shadow:none}
+.error{background:#ffe4e6;color:#be123c;padding:10px 12px;border-radius:12px;font-size:14px}
+.setting{background:var(--p50);border-radius:16px;padding:14px;margin-bottom:8px}
+.setting .t{font-size:13px;color:var(--muted)}
+.setting .v{margin-top:4px;font-weight:700}
+.hint{margin:16px 0 0;font-size:13px;line-height:1.9;color:var(--muted)}
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 100px);left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:12px 20px;border-radius:999px;font-size:14px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:90%;text-align:center}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;align-items:center;justify-content:space-around;padding:10px 12px calc(env(safe-area-inset-bottom) + 10px);background:#fff;border-radius:28px 28px 0 0;box-shadow:0 -6px 24px rgba(236,72,153,.18);z-index:40}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;padding:6px}
+.nav-item.active{color:var(--p600)}
+.nav-add{width:62px;height:62px;margin-top:-34px;border-radius:50%;border:5px solid var(--p50);background:linear-gradient(135deg,var(--p400),var(--p600));color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 20px rgba(219,39,119,.4)}
+.nav-add:active{transform:scale(.94)}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <h1>🎂 یادآور تولد شمسی</h1>
+    <p class="today" id="today"></p>
+  </header>
+
+  <main class="content">
+    <section id="view-home"></section>
+
+    <section id="view-add" class="panel hidden">
+      <h2>ثبت تولد جدید</h2>
+      <form id="form" class="form">
+        <label>نام
+          <input id="name" type="text" placeholder="مثلاً: مریم" maxlength="40" />
+        </label>
+        <div class="row">
+          <label>روز <select id="day"></select></label>
+          <label>ماه <select id="month"></select></label>
+        </div>
+        <div id="error" class="error hidden"></div>
+        <button type="submit" class="btn block">ثبت تولد</button>
+      </form>
+    </section>
+
+    <section id="view-settings" class="panel hidden">
+      <h2>تنظیمات</h2>
+      <div class="setting">
+        <div class="t">وضعیت نوتیفیکیشن</div>
+        <div class="v" id="perm"></div>
+      </div>
+      <label>ساعت یادآوری در روز تولد
+        <select id="hour"></select>
+      </label>
+      <button id="btn-perm" class="btn block">درخواست اجازه نوتیفیکیشن</button>
+      <button id="btn-test" class="btn outline block">ارسال نوتیفیکیشن تستی</button>
+      <p class="hint">اعلان‌ها با آلارم خود اندروید زمان‌بندی می‌شوند و نیازی به باز کردن برنامه ندارند. با هر بار باز کردن برنامه، زمان‌بندی‌ها به‌روز می‌شوند.</p>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <nav class="nav">
+    <button class="nav-item active" data-tab="home">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+      <span>خانه</span>
+    </button>
+    <button class="nav-add" data-tab="add" aria-label="افزودن">
+      <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button class="nav-item" data-tab="settings">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      <span>تنظیمات</span>
+    </button>
+  </nav>
+</div>
+
+<script>
+(function () {
+  var MONTHS = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+  var KEY = 'jalali-birthdays-v1';
+  var HKEY = 'jalali-birthdays-hour';
+  var CHANNEL = 'birthdays';
+  var $ = function (id) { return document.getElementById(id); };
+  var fa = function (n) { return Number(n).toLocaleString('fa-IR', { useGrouping: false }); };
+  var LN = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
+
+  // ---------- تبدیل تاریخ شمسی به میلادی (الگوریتم jalaali-js) ----------
+  function div(a, b) { return ~~(a / b); }
+  function mod(a, b) { return a - ~~(a / b) * b; }
+  function jalCal(jy) {
+    var breaks = [-61, 9, 38, 199, 426, 686, 756, 818, 1111, 1181, 1210, 1635, 2060, 2097, 2192, 2262, 2324, 2394, 2456, 3178];
+    var bl = breaks.length, gy = jy + 621, leapJ = -14, jp = breaks[0], jm, jump = 0, leap, leapG, march, n, i;
+    if (jy < jp || jy >= breaks[bl - 1]) throw new Error('Invalid Jalaali year ' + jy);
+    for (i = 1; i < bl; i += 1) {
+      jm = breaks[i]; jump = jm - jp;
+      if (jy < jm) break;
+      leapJ = leapJ + div(jump, 33) * 8 + div(mod(jump, 33), 4);
+      jp = jm;
+    }
+    n = jy - jp;
+    leapJ = leapJ + div(n, 33) * 8 + div(mod(n, 33) + 3, 4);
+    if (mod(jump, 33) === 4 && jump - n === 4) leapJ += 1;
+    leapG = div(gy, 4) - div((div(gy, 100) + 1) * 3, 4) - 150;
+    march = 20 + leapJ - leapG;
+    if (jump - n < 6) n = n - jump + div(jump + 4, 33) * 33;
+    leap = mod(mod(n + 1, 33) - 1, 4);
+    if (leap === -1) leap = 4;
+    return { leap: leap, gy: gy, march: march };
+  }
+  function g2d(gy, gm, gd) {
+    var d = div((gy + div(gm - 8, 6) + 100100) * 1461, 4) + div(153 * mod(gm + 9, 12) + 2, 5) + gd - 34840408;
+    d = d - div(div(gy + 100100 + div(gm - 8, 6), 100) * 3, 4) + 752;
+    return d;
+  }
+  function d2g(jdn) {
+    var j = 4 * jdn + 139361631;
+    j = j + div(div(4 * jdn + 183187720, 146097) * 3, 4) * 4 - 3908;
+    var i = div(mod(j, 1461), 4) * 5 + 308;
+    var gd = div(mod(i, 153), 5) + 1, gm = mod(div(i, 153), 12) + 1, gy = div(j, 1461) - 100100 + div(8 - gm, 6);
+    return { gy: gy, gm: gm, gd: gd };
+  }
+  function toGregorian(jy, jm, jd) {
+    var r = jalCal(jy);
+    return d2g(g2d(r.gy, 3, r.march) + (jm - 1) * 31 - div(jm, 7) * (jm - 7) + jd - 1);
+  }
+  function isLeap(jy) { return jalCal(jy).leap === 0; }
+
+  function maxDays(m) { return m <= 6 ? 31 : 30; }
+
+  function jalaliToday() {
+    var parts = new Intl.DateTimeFormat('en-US-u-ca-persian-nu-latn', { year: 'numeric', month: 'numeric', day: 'numeric' }).formatToParts(new Date());
+    var g = function (t) { return parseInt(parts.filter(function (p) { return p.type === t; })[0].value, 10); };
+    return { year: g('year'), month: g('month'), day: g('day') };
+  }
+  function doy(m, d) { return m <= 6 ? (m - 1) * 31 + d : 186 + (m - 7) * 30 + d; }
+  function daysUntil(p, t) { var d = doy(p.month, p.day) - doy(t.month, t.day); return d >= 0 ? d : d + 365; }
+
+  // ---------- ذخیره‌سازی ----------
+  function load() { try { var a = JSON.parse(localStorage.getItem(KEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function save(l) { localStorage.setItem(KEY, JSON.stringify(l)); }
+  function getHour() { var h = parseInt(localStorage.getItem(HKEY), 10); return isNaN(h) ? 8 : h; }
+
+  var list = load();
+  var today = jalaliToday();
+
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  function toast(msg) {
+    var t = $('toast'); t.textContent = msg; t.classList.remove('hidden');
+    clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.add('hidden'); }, 2800);
+  }
+
+  // ---------- نمایش ----------
+  function render() {
+    today = jalaliToday();
+    $('today').textContent = 'امروز: ' + fa(today.day) + ' ' + MONTHS[today.month - 1] + ' ' + fa(today.year);
+    var sorted = list.map(function (p) { return Object.assign({}, p, { left: daysUntil(p, today) }); })
+      .sort(function (a, b) { return a.left - b.left || a.name.localeCompare(b.name, 'fa'); });
+    var h = $('view-home');
+    if (!sorted.length) {
+      h.innerHTML = '<div class="empty"><div class="e">🎈</div><p>هنوز تولدی ثبت نکرده‌اید.</p><button class="btn" data-tab="add">افزودن اولین تولد</button></div>';
+      return;
+    }
+    h.innerHTML = '<ul class="list">' + sorted.map(function (p) {
+      var now = p.left === 0;
+      return '<li class="card' + (now ? ' today-card' : '') + '">' +
+        '<div class="avatar">' + esc(p.name.charAt(0)) + '</div>' +
+        '<div class="info"><div class="name">' + esc(p.name) + '</div><div class="date">' + fa(p.day) + ' ' + MONTHS[p.month - 1] + '</div></div>' +
+        '<div class="badge' + (now ? ' now' : '') + '">' + (now ? 'امروز 🎉' : fa(p.left) + ' روز دیگر') + '</div>' +
+        '<button class="icon-btn" aria-label="حذف" data-del="' + p.id + '"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>' +
+        '</li>';
+    }).join('') + '</ul>';
+  }
+
+  function setTab(tab) {
+    ['home', 'add', 'settings'].forEach(function (t) { $('view-' + t).classList.toggle('hidden', t !== tab); });
+    document.querySelectorAll('.nav-item').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tab') === tab); });
+    if (tab === 'home') render();
+    if (tab === 'settings') renderPerm();
+  }
+
+  async function renderPerm() {
+    var el = $('perm');
+    if (!LN) { el.textContent = 'فقط داخل اپ اندروید کار می‌کند'; return; }
+    try {
+      var p = await LN.checkPermissions();
+      var m = { granted: 'فعال ✅', denied: 'مسدود شده ❌ (از تنظیمات گوشی فعال کنید)', prompt: 'هنوز درخواست نشده', 'prompt-with-rationale': 'هنوز درخواست نشده' };
+      el.textContent = m[p.display] || p.display;
+    } catch (e) { el.textContent = 'نامشخص'; }
+  }
+
+  // ---------- زمان‌بندی نوتیفیکیشن‌های اندروید ----------
+  function notifBase() {
+    return { channelId: CHANNEL, smallIcon: 'ic_notification', iconColor: '#EC4899' };
+  }
+
+  function occurrenceDate(p, year, hour) {
+    var d = p.day;
+    if (p.month === 12 && d === 30 && !isLeap(year)) d = 29;
+    var g = toGregorian(year, p.month, d);
+    return new Date(g.gy, g.gm - 1, g.gd, hour, 0, 0, 0);
+  }
+
+  async function scheduleAll() {
+    if (!LN) return;
+    try {
+      var perm = await LN.checkPermissions();
+      if (perm.display !== 'granted') return;
+
+      var pending = await LN.getPending();
+      if (pending.notifications && pending.notifications.length) {
+        await LN.cancel({ notifications: pending.notifications.map(function (n) { return { id: n.id }; }) });
+      }
+
+      var now = new Date(), t = jalaliToday(), hour = getHour(), items = [], id = 1;
+      list.forEach(function (p) {
+        var count = 0;
+        for (var y = t.year; y <= t.year + 4 && count < 3; y++) {
+          var at = occurrenceDate(p, y, hour);
+          if (at > now) {
+            items.push(Object.assign(notifBase(), {
+              id: id++,
+              title: '🎂 تولدت مبارک!',
+              body: 'امروز تولد ' + p.name + ' است. فراموش نکن تبریک بگویی!',
+              schedule: { at: at, allowWhileIdle: true },
+              extra: { personId: p.id }
+            }));
+            count++;
+          }
+        }
+      });
+      if (items.length) await LN.schedule({ notifications: items });
+    } catch (e) { console.error('schedule failed', e); }
+  }
+
+  async function ensurePermission(askIfNeeded) {
+    if (!LN) return false;
+    var p = await LN.checkPermissions();
+    if (p.display === 'granted') return true;
+    if (!askIfNeeded || p.display === 'denied') return false;
+    p = await LN.requestPermissions();
+    return p.display === 'granted';
+  }
+
+  // ---------- فرم ----------
+  for (var d = 1; d <= 31; d++) { var o = document.createElement('option'); o.value = d; o.textContent = fa(d); $('day').appendChild(o); }
+  MONTHS.forEach(function (m, i) { var o = document.createElement('option'); o.value = i + 1; o.textContent = m; $('month').appendChild(o); });
+  for (var h = 0; h < 24; h++) { var oh = document.createElement('option'); oh.value = h; oh.textContent = fa(h) + ':۰۰'; $('hour').appendChild(oh); }
+  $('hour').value = getHour();
+
+  $('form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var name = $('name').value.trim(), dd = parseInt($('day').value, 10), mm = parseInt($('month').value, 10);
+    var err = $('error');
+    function fail(msg) { err.textContent = msg; err.classList.remove('hidden'); }
+    if (!name) return fail('لطفاً نام را وارد کنید.');
+    if (dd > maxDays(mm)) return fail(MONTHS[mm - 1] + ' حداکثر ' + fa(maxDays(mm)) + ' روز دارد.');
+    err.classList.add('hidden');
+    list.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: name, day: dd, month: mm });
+    save(list);
+    $('name').value = ''; $('day').value = 1; $('month').value = 1;
+    toast('تولد با موفقیت ثبت شد 🎉');
+    setTab('home');
+
+    // اگر تولدِ امروز است و ساعت یادآوری گذشته، همین حالا اعلان بده
+    var t = jalaliToday();
+    if (LN && mm === t.month && dd === t.day) {
+      var at0 = new Date(); at0.setHours(getHour(), 0, 0, 0);
+      if (at0 <= new Date() && await ensurePermission(false)) {
+        try {
+          await LN.schedule({ notifications: [Object.assign(notifBase(), {
+            id: 900000 + Math.floor(Math.random() * 90000),
+            title: '🎂 تولدت مبارک!',
+            body: 'امروز تولد ' + name + ' است. فراموش نکن تبریک بگویی!',
+            schedule: { at: new Date(Date.now() + 1500), allowWhileIdle: true }
+          })] });
+        } catch (x) { console.error(x); }
+      }
+    }
+    scheduleAll();
+  });
+
+  document.addEventListener('click', function (e) {
+    var tabBtn = e.target.closest('[data-tab]');
+    if (tabBtn) return setTab(tabBtn.getAttribute('data-tab'));
+    var del = e.target.closest('[data-del]');
+    if (del) {
+      var id = del.getAttribute('data-del');
+      var p = list.filter(function (x) { return x.id === id; })[0];
+      if (p && confirm('«' + p.name + '» از لیست حذف شود؟')) {
+        list = list.filter(function (x) { return x.id !== id; });
+        save(list); render(); scheduleAll();
+      }
+    }
+  });
+
+  $('hour').addEventListener('change', function () {
+    localStorage.setItem(HKEY, $('hour').value);
+    toast('ساعت یادآوری ذخیره شد ✅');
+    scheduleAll();
+  });
+
+  $('btn-perm').addEventListener('click', async function () {
+    if (!LN) return toast('این قابلیت فقط داخل اپ اندروید کار می‌کند.');
+    var ok = await ensurePermission(true);
+    renderPerm();
+    if (ok) { toast('اجازه نوتیفیکیشن فعال شد ✅'); scheduleAll(); }
+    else toast('اجازه داده نشد. از تنظیمات گوشی فعالش کنید.');
+  });
+
+  $('btn-test').addEventListener('click', async function () {
+    if (!LN) return toast('این قابلیت فقط داخل اپ اندروید کار می‌کند.');
+    if (!(await ensurePermission(true))) return toast('ابتدا اجازه نوتیفیکیشن را فعال کنید.');
+    try {
+      await LN.schedule({ notifications: [Object.assign(notifBase(), {
+        id: 999999,
+        title: '🎂 نوتیفیکیشن تستی',
+        body: 'یادآور تولد شمسی درست کار می‌کند!',
+        schedule: { at: new Date(Date.now() + 3000), allowWhileIdle: true }
+      })] });
+      toast('تا ۳ ثانیه دیگر اعلان می‌آید.');
+    } catch (e) { toast('ارسال ناموفق بود.'); console.error(e); }
+  });
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') { render(); scheduleAll(); }
+  });
+
+  async function init() {
+    render();
+    if (!LN) return;
+    try {
+      await LN.createChannel({ id: CHANNEL, name: 'یادآور تولد', description: 'اعلان تولدها', importance: 5, visibility: 1, vibration: true });
+    } catch (e) { console.error('channel', e); }
+    try { await ensurePermission(true); } catch (e) { console.error(e); }
+    scheduleAll();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
